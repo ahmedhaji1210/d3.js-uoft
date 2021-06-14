@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<!-- Load d3.js -->
+<script src="https://d3js.org/d3.v4.js"></script>
+
+
+<div class="container">
+  <div id="my_dataviz">
+    <h2>Number of Veterinary Hospitals in Select Canadian Cities</h2>
+  </div>
+  <div>
+    <p>The scatter plot above visualizes the total number of veterinary hospitals within select cities in Canada.
+    The data is not shown in any specific order, however, it shows the data as a line connecting each point,
+    whereas each point is able to be hovered upon. To make the visualization easier to understand, a tooltip has been
+    added which can be accessed by hovering above a specifc point. This tooltip will give the city name along with the
+    total number of veterinary hospitals in that city. The tooltip also hovers a bit higher than the point so that
+    the viewer can make sure what point their cursor is on, as the corelating tooltip information will then be displayed.</p>
+  </div>
+  <div id="footnotes">
+    <p>Data provided by Professor Steve Szigeti - CCT470 2021.</p>
+    <p>Visualization created by Ahmed Haji.</p>
+  </div>
+</div>
+
+<style>
+	.myCircle:hover {
+  	stroke: black;
+  	fill: #006a4e;
+  }
+	.container {
+		display: block;
+    font-family: Arial;
+    width: 40%;
+  }
+	#my_dataviz h2 {
+    text-align: center;
+    text-decoration: underline;
+  }
+
+  #footnotes {
+    font-size: 12px;
+  }
+</style>
+
+<script>
+  // Dimensions and margins of graph
+	var margin = {top: 10, right: 30, bottom: 50, left: 60},
+    width = 800 - margin.left - margin.right,
+	  height = 600 - margin.top - margin.bottom;
+
+	// append the svg object to the body of the page
+	var svg = d3.select("#my_dataviz")
+	  .append("svg")
+	    .attr("width", width + margin.left + margin.right)
+	    .attr("height", height + margin.top + margin.bottom)
+	  .append("g")
+	    .attr("transform",
+	          "translate(" + margin.left + "," + margin.top + ")");
+
+	//Read the data
+	d3.csv("https://raw.githubusercontent.com/ahmedhaji1210/d3.js-uoft/main/table-1.csv",
+
+  function(data) {
+
+    // Add the city labels and X-axis title
+	  var x = d3.scalePoint()
+      .domain(["Montreal", "Toronto", "Winnipeg", "Edmonton", "Calgary", "Vancouver"])
+      .range([ 0, width ]);
+    svg.append("g")
+    	.attr("transform", "translate(0," + height + ")")
+      	.call(d3.axisBottom(x));
+    svg.append("text")
+	  	.attr("text-anchor", "end")
+	  	.attr("x", 375)
+	  	.attr("y", height + 40)
+	  	.text("City");
+
+    // Add the count for hospitals on the Y-axis and axis title
+    var y = d3.scaleLinear()
+      .domain( [0, 60])
+      .range([ height, 0 ]);
+    svg.append("g")
+      .call(d3.axisLeft(y));
+    svg.append("text")
+	   	.attr("text-anchor", "end")
+	    .attr("y", -60)
+	    .attr("dy", ".75em")
+	    .attr("x", -175)
+	    .attr("transform", "rotate(-90)")
+	    .text("Total Number of Veterinary Hospitals")
+
+    // Add the line
+    svg.append("path")
+      .datum(data)
+      .attr("fill", "none")
+      .attr("stroke", "#0d98ba")
+      .attr("stroke-width", 3.0)
+      .attr("d", d3.line()
+        .x(function(d) { return x(d.city) })
+        .y(function(d) { return y(d.hospitals) })
+        )
+
+    // create a tooltip
+    var Tooltip = d3.select("#my_dataviz")
+      .append("div")
+      .style("opacity", 0)
+      .attr("class", "tooltip")
+      .style("background-color", "#006a4e")
+      .style("border", "solid")
+      .style("border-width", "2px")
+      .style("border-radius", "15px")
+      .style("padding", "10px")
+      .style("position", "absolute")
+      .style("color", "white")
+
+      // Three function that change the tooltip when user hover / move / leave a cell
+      var mouseover = function(d) {
+        Tooltip
+          .style("opacity", 1)
+      }
+      var mousemove = function(d) {
+        Tooltip
+          .html("City: " + d.city + "<br>" + "Total Hospitals: " + d.hospitals)
+          .style("left", (d3.mouse(this)[0]+70) + "px")
+          .style("top", (d3.mouse(this)[1]) + "px")
+      }
+      var mouseleave = function(d) {
+        Tooltip
+          .style("opacity", 0)
+      }
+
+    // Add the points
+    svg
+      .append("g")
+      .selectAll("dot")
+      .data(data)
+      .enter()
+      .append("circle")
+        .attr("class", "myCircle")
+        .attr("cx", function(d) { return x(d.city) } )
+        .attr("cy", function(d) { return y(d.hospitals) } )
+        .attr("r", 4)
+        .attr("stroke", "#006a4e")
+        .attr("stroke-width", 4)
+        .attr("fill", "white")
+        .on("mouseover", mouseover)
+        .on("mousemove", mousemove)
+       .on("mouseleave", mouseleave)
+})
+</script>
